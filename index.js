@@ -1,7 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 
-const PORT = 80;
+const PORT = 3000;
 
 const serveStaticFile = async (file) => {
   return new Promise((resolve, reject) => {
@@ -37,8 +37,12 @@ const handleRequest = async (request, response) => {
         content = await serveStaticFile("www/style.css");
         contentType = "text/css";
         break;
+      case "/tasks/get":
+        content = await serveStaticFile("tasks.json");
+        contentType = "application/json";
+        break;
       default: 
-        content = "Ruta no v&aacutelida\r\n";
+        content = "Ruta no valida\r\n";
         contentType = "text/html";
     }
 

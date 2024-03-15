@@ -1,9 +1,13 @@
 const taskList = [];
 
-const loadTasks = () => {
-  fetch("/tasks/get")
+const loadTasks = async () => {
+  const response = await fetch("/tasks/get");
+  const jsonText = await response.json();
+  console.log(jsonText);
   
 }
+
+loadTasks();
 
 const add = () => {}
 
