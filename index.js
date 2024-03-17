@@ -20,10 +20,10 @@ const sendResponse = (response, content, contentType) => {
 const handleRequest = async (request, response) => {
   const url = request.url;
 
-  if(request.method === "GET"){
+  if (request.method === "GET") {
     let content;
     let contentType;
-    switch(url){
+    switch (url) {
       case "/":
       case "/index.html":
         content = await serveStaticFile("www/index.html");
@@ -41,17 +41,127 @@ const handleRequest = async (request, response) => {
         content = await serveStaticFile("tasks.json");
         contentType = "application/json";
         break;
-      default: 
+      default:
         content = "Ruta no valida\r\n";
         contentType = "text/html";
     }
 
-     sendResponse(response, content, contentType);
-  } else{
-     response.writeHead(405, {"Content-Type": "text/html"});
-     response.write(`M&eacutetodo ${request.method} no permitido!\r\n`);
+    sendResponse(response, content, contentType);
+  } else if (request.method === "POST") {
+    let body = '';
+    request.on('data', (chunk) => {
+      body += chunk.toString();
+    });
+
+    request.on('end', async () => {
+      let requestData;
+      try {
+        requestData = JSON.parse(body);
+      } catch (error) {
+        console.error('Error parsing request body:', error);
+        response.writeHead(400, { 'Content-Type': 'text/plain' });
+        response.end('Bad request');
+        return;
+      }
+      console.log(requestData);
+      const { taskId, title, taskDone } = requestData;
+      const taskName = title;
+      switch (url) {
+        case "/tasks/add":
+          // Read current tasks from file
+          console.log(taskName);
+          let tasksData_add = await serveStaticFile("tasks.json");
+          const tasks_add = JSON.parse(tasksData_add);
+
+          // Find the next available task ID
+          const nextId = tasks_add.length > 0 ? tasks_add[tasks_add.length - 1].id + 1 : 1;
+          console.log('vamos bien')
+          // Add the new task to the tasks array
+          tasks_add.push({ id: nextId, title: taskName, done: false });
+          console.log('bien hasta aqui')
+          // Write updated tasks back to file
+          fs.writeFile('tasks.json', JSON.stringify(tasks_add), (err) => {
+            if (err) {
+              console.error('Error writing tasks to file:', err);
+              response.writeHead(500, { 'Content-Type': 'text/plain' });
+              response.end('Internal server error');
+            } else {
+              console.log(`Task added successfully`);
+              response.writeHead(200, { 'Content-Type': 'application/json' });
+              response.end(JSON.stringify({ success: true }));
+            }
+          });
+          
+          console.log('bien hasta el final')
+          break;
+        case "/tasks/remove":
+          // Read current tasks from file
+          const tasksData = await serveStaticFile("tasks.json");
+          const tasks = JSON.parse(tasksData);
+
+          // Find index of task to remove
+          const index = tasks.findIndex(task => task.id === taskId);
+          if (index !== -1) {
+            // Remove task from array
+            tasks.splice(index, 1);
+
+            // Write updated tasks back to file
+            fs.writeFile('tasks.json', JSON.stringify(tasks), (err) => {
+              if (err) {
+                console.error('Error writing tasks to file:', err);
+                response.writeHead(500, { 'Content-Type': 'text/plain' });
+                response.end('Internal server error');
+              } else {
+                console.log(`Task with ID ${taskId} removed successfully`);
+                response.writeHead(200, { 'Content-Type': 'text/plain' });
+                response.end('Task removed successfully');
+              }
+            });
+          }
+          else {
+            console.error(`Task with ID ${taskId} not found`);
+            response.writeHead(404, { 'Content-Type': 'text/plain' });
+            response.end('Task not found');
+          }
+          break;
+        case "/tasks/toggleDone":
+          const tasksData_toggle = await serveStaticFile("tasks.json");
+          const tasks_toggle = JSON.parse(tasksData_toggle);
+          const index_toggle = tasks_toggle.findIndex(task => task.id === taskId);
+          if (index_toggle !== -1) {
+            tasks_toggle[index_toggle].done = !tasks_toggle[index_toggle].done;
+            fs.writeFile('tasks.json', JSON.stringify(tasks_toggle), (err) => {
+              if (err) {
+                console.error('Error writing tasks to file:', err);
+                response.writeHead(500, { 'Content-Type': 'text/plain' });
+                response.end('Internal server error');
+              } else {
+                console.log(`Task with ID ${taskId} toggled successfully`);
+                response.writeHead(200, { 'Content-Type': 'text/plain' });
+                response.end('Task toggled successfully');
+              }
+            });
+          } else {
+            console.error(`Task with ID ${taskId} not found`);
+            response.writeHead(404, { 'Content-Type': 'text/plain' });
+            response.end('Task not found');
+          }
+          break;       
+        default:
+          console.log('Invalid URL:', url);
+          console.error('Invalid URL:', url);
+          response.writeHead(404, { 'Content-Type': 'text/plain' });
+          response.end('Not found');
+      }
+    });
   }
-}
+};
+
+
+
+
+
+
 
 
 const server = http.createServer(handleRequest);
