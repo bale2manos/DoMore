@@ -30,10 +30,11 @@ body {
   align-items: center;
   justify-content: center;
   margin: 10px;
+  overflow-y: scroll;
 }
 
 .task-item {
-  width: 80%;
+  width: 95%;
   height: 50px;
   border-radius: 10px;
   margin-bottom: 10px;
@@ -52,19 +53,34 @@ body {
   background-color: #7367f0;
   color: white;
   border: none;
-  font-size: 1.2em;
+  font-size: 1.5em; /* Aumentar el tamaño del icono */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Agregar sombra */
+  transition: background-color 0.3s ease, transform 0.3s ease; /* Agregar transición */
 }
 
-#fab-add:active {
-  background-color: #ef9a9a;
-  color: #999999;
+#fab-add:hover {
+  background-color: #90be6d; /* Cambiar color de fondo al pasar el cursor */
+  transform: scale(1.1); /* Aumentar el tamaño al pasar el cursor */
 }
+
+
 
 #task-name {
   flex-grow: 1;
-  height: 64px;
-  margin-right: 15px;
+  height: 50px;
+  padding: 10px;
+  border: 2px solid #7367f0;
+  border-radius: 25px; /* Agregar esquinas redondas */
+  font-size: 1em;
+  outline: none; /* Eliminar el contorno al enfocar el input */
+  transition: border-color 0.3s ease; /* Transición suave para el color del borde */
+  margin-right: 2vw;
 }
+
+#task-name:focus {
+  border-color: #90be6d; /* Cambiar el color del borde al enfocar el input */
+}
+
 
 
 .task-item {
@@ -93,3 +109,30 @@ body {
   transform: translateX(30%); /* Slide the task item to the left */
   transition: opacity 0.8s ease-out, transform 0.3s ease-out; /* Smooth transition */
 }
+/* style.css */
+
+.task-container-wrapper {
+  max-height: calc(100vh - 200px); /* Altura máxima del contenedor de tareas */
+  overflow-y: auto; /* Activar desplazamiento vertical cuando se excede la altura máxima */
+  margin: 0 auto; /* Centrar el contenedor horizontalmente */
+  width: 80%; /* Ancho del contenedor */
+}
+
+.task-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 10px;
+  width: 100%; /* Ancho completo del contenedor */
+  box-sizing: border-box; /* Incluir padding y border en el ancho */
+}
+
+/* Personalizar la barra de desplazamiento */
+.simplebar-scrollbar:before {
+  background: #7367f0; /* Color de fondo de la barra de desplazamiento */
+}
+.simplebar-scrollbar .simplebar-scrollbar-thumb {
+  background: #90be6d; /* Color del pulgar de la barra de desplazamiento */
+}
+

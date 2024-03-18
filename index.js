@@ -71,11 +71,11 @@ const handleRequest = async (request, response) => {
           // Read current tasks from file
           console.log(taskName);
           let tasksData_add = await serveStaticFile("tasks.json");
+          console.log(tasksData_add);
           const tasks_add = JSON.parse(tasksData_add);
 
           // Find the next available task ID
           const nextId = tasks_add.length > 0 ? tasks_add[tasks_add.length - 1].id + 1 : 1;
-          console.log('vamos bien')
           // Add the new task to the tasks array
           tasks_add.push({ id: nextId, title: taskName, done: false });
           console.log('bien hasta aqui')

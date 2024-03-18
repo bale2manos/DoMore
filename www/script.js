@@ -1,11 +1,15 @@
 const taskList = [];
 const tasksContainer = document.getElementById('task-container');
 
+// Inicializar SimpleBar en el contenedor de tareas
+const taskContainerWrapper = document.querySelector('.task-container-wrapper');
+new SimpleBar(taskContainerWrapper, { autoHide: false });
+
+
 const loadTasks = async () => {
   const response = await fetch("/tasks/get");
   const tasks = await response.json();
-  
-  document.body.appendChild(tasksContainer); // Agrega el contenedor al final del body
+
 
   tasks.forEach(task => {
     // Agregar la tarea al array taskList
@@ -26,70 +30,102 @@ const loadTasks = async () => {
 
 loadTasks();
 console.log(taskList);
+const addButton = document.querySelector("#fab-add");
+
+const resetButonStyle = () => {
+  const fabAddButton = document.getElementById('fab-add');
+  setTimeout(() => {
+  fabAddButton.style.backgroundColor = '#7367f0'; // Restaurar color de fondo
+  fabAddButton.style.color = 'white'; // Restaurar color de texto
+  fabAddButton.style.transform = 'scale(1)'; // Restaurar tamaño
+  },450);
+}
+
+const setButtonStyleForTask = () => {
+  addButton.style.backgroundColor = '#90be6d'; // Cambiar color de fondo
+  addButton.style.transform = 'scale(1.1)'; // Aumentar tamaño
+  resetButonStyle();
+};
+
+const setButtonStyleForEmptyTask = () => {
+  addButton.style.backgroundColor = '#ef9a9a'; // Cambiar color de fondo
+  addButton.style.transform = 'scale(1.1)'; // Reducir tamaño
+};
+
 
 
 const add = async () => {
   const taskNameInput = document.getElementById('task-name');
-  const taskName = taskNameInput.value.trim(); // Get the value from the input field, removing leading and trailing whitespace
+  const taskName = taskNameInput.value.trim(); // Obtener el valor del campo de entrada, eliminando espacios en blanco iniciales y finales
 
   if (taskName !== '') {
     console.log(`Adding task: ${taskName}`);
     try {
-      // Send a POST request to the server to add the new task
+      // Enviar una solicitud POST al servidor para agregar la nueva tarea
       const response = await fetch("/tasks/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({title: taskName }) // Send the action and task title in JSON format
+        body: JSON.stringify({title: taskName }) // Enviar la acción y el título de la tarea en formato JSON
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Parse the response JSON data
+      // Analizar los datos JSON de la respuesta
       const responseData = await response.json();
 
-      // Check if the task was added successfully
+      // Verificar si la tarea se agregó correctamente
       if (responseData.success) {
         console.log("Tarea agregada!");
-        // If successful, update the task list locally
+        // Si se agrega correctamente, actualizar la lista de tareas localmente
         const nextId = taskList.length > 0 ? taskList[taskList.length - 1].id + 1 : 1;
         const newTask = { id: nextId, title: taskName, done: false };
         taskList.push(newTask);
 
-        // Create a new task element and append it to the tasks container
+        // Crear un nuevo elemento de tarea y agregarlo al contenedor de tareas
         const taskElement = document.createElement('div');
         taskElement.classList.add('task-item');
         taskElement.innerHTML = taskName;
         taskElement.dataset.taskId = nextId;
         tasksContainer.appendChild(taskElement);
 
-        // Clear the input field
+        // Limpiar el campo de entrada
         taskNameInput.value = '';
 
         console.log("Tarea agregada!");
         console.log(taskList);
+
+        // Establecer estilos para el botón cuando se agrega una tarea con texto
+        setButtonStyleForTask();
       } else {
-        // If not successful, display an error message
+        // Si no se agrega correctamente, mostrar un mensaje de error
         console.error("Error adding task:", responseData.message);
       }
     } catch (error) {
       console.error("Error:", error);
     }
   } else {
-    // Show an error message if the input field is empty
+    // Mostrar un mensaje de error si el campo de entrada está vacío
+    setButtonStyleForEmptyTask();
+
     Swal.fire({
       icon: 'error',
       title: 'Oops...',
       text: '¡Debes ingresar el nombre de la tarea!'
-    });
+    }).then(() => {
+      resetButonStyle();
+    }); 
+
+    // Establecer estilos para el botón cuando se agrega una tarea vacía
   }
 };
 
 
-const addButton = document.querySelector("#fab-add");
+
+
 addButton.addEventListener("click", add);
 
 const taskNameInput = document.getElementById('task-name');
