@@ -58,8 +58,12 @@ const add = async () => {
   const taskNameInput = document.getElementById('task-name');
   const taskName = taskNameInput.value.trim(); // Obtener el valor del campo de entrada, eliminando espacios en blanco iniciales y finales
 
+
+
+
   if (taskName !== '') {
     console.log(`Adding task: ${taskName}`);
+
     try {
       // Enviar una solicitud POST al servidor para agregar la nueva tarea
       const response = await fetch("/tasks/add", {
@@ -272,21 +276,31 @@ const toggleDone = async (taskId) => {
         if (shouldAnimate && holdDuration >= 2000) {
           // Update the task's state after 2 seconds if the animation should proceed
           task.done = !task.done;
-
+ 
+          
+          console.log(taskList);
+          const tareas = taskList.map(task => {
+            return {
+              id: task.id,
+              title: task.title,
+              done: task.done
+            };
+          });
+          console.log(tareas);
+          console.log(JSON.stringify(tareas));
           // Send a request to the server to update the task's 'done' status
           try {
-            const response = await fetch(`/tasks/toggleDone`, {
-              method: 'POST',
+              const response = await fetch("/tasks/toggleDone", {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json'
+                "Content-Type": "application/json"
               },
-              body: JSON.stringify({ taskId: taskId})
+              body: JSON.stringify(tareas) // Send the task list in JSON format
             });
-
+            
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
             }
-
             console.log(`Estado de la tarea con ID ${taskId} cambiado a ${task.done}`);
           } catch (error) {
             console.error('Error toggling task status:', error);

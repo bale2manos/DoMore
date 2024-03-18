@@ -132,29 +132,30 @@ const handleRequest = async (request, response) => {
             response.end('Task not found');
           }
           break;
-        case "/tasks/toggleDone":
-          const tasksData_toggle = await serveStaticFile("tasks.json");
-          const tasks_toggle = JSON.parse(tasksData_toggle);
-          const index_toggle = tasks_toggle.findIndex(task => task.id === taskId);
-          if (index_toggle !== -1) {
-            tasks_toggle[index_toggle].done = !tasks_toggle[index_toggle].done;
-            fs.writeFile('tasks.json', JSON.stringify(tasks_toggle), (err) => {
-              if (err) {
-                console.error('Error writing tasks to file:', err);
-                response.writeHead(500, { 'Content-Type': 'text/plain' });
-                response.end('Internal server error');
-              } else {
-                console.log(`Task with ID ${taskId} toggled successfully`);
-                response.writeHead(200, { 'Content-Type': 'text/plain' });
-                response.end('Task toggled successfully');
-              }
-            });
-          } else {
-            console.error(`Task with ID ${taskId} not found`);
-            response.writeHead(404, { 'Content-Type': 'text/plain' });
-            response.end('Task not found');
+      case "/tasks/toggleDone":
+        let body = '';
+        request.on('data', chunk => {
+          body += chunk.toString();
+        });
+        console.log("This is the body: ", body);
+        request.on('end', async () => {
+          console.log("Entro");
+          try {
+            const tasksList = JSON.parse(body).tasks;
+            console.log("This is the taskList: ", tasksList);
+
+            await fs.promises.writeFile('tasks.json', JSON.stringify(tasksList));
+      
+            console.log(`Tasks added successfully`);
+            response.writeHead(200, { 'Content-Type': 'application/json' });
+            response.end(JSON.stringify({ success: true }));
+          } catch (err) {
+            console.error('Error writing tasks to file:', err);
+            response.writeHead(500, { 'Content-Type': 'text/plain' });
+            response.end('Internal server error');
           }
-          break;       
+        });
+        break;
         default:
           console.log('Invalid URL:', url);
           console.error('Invalid URL:', url);
