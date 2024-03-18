@@ -41,6 +41,10 @@ const handleRequest = async (request, response) => {
         content = await serveStaticFile("tasks.json");
         contentType = "application/json";
         break;
+      case "/favicon.ico": // Ruta para el favicon
+        content = await serveStaticFile("www/todo_icon.png");
+        contentType = "image/png";
+        break;
       default:
         content = "Ruta no valida\r\n";
         contentType = "text/html";
