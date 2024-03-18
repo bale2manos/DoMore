@@ -24,32 +24,36 @@ const handleRequest = async (request, response) => {
     let content;
     let contentType;
     switch (url) {
-      case "/":
-      case "/index.html":
-        content = await serveStaticFile("www/index.html");
-        contentType = "text/html";
-        break;
-      case "/script.js":
-        content = await serveStaticFile("www/script.js");
-        contentType = "text/javascript";
-        break;
-      case "/style.css":
-        content = await serveStaticFile("www/style.css");
-        contentType = "text/css";
-        break;
-      case "/tasks/get":
-        content = await serveStaticFile("tasks.json");
-        contentType = "application/json";
-        break;
-      case "/favicon.ico": // Ruta para el favicon
-        content = await serveStaticFile("www/todo_icon.png");
-        contentType = "image/png";
-        break;
-      default:
-        content = "Ruta no valida\r\n";
-        contentType = "text/html";
+        case "/":
+        case "/index.html":
+            content = await serveStaticFile("www/index.html");
+            contentType = "text/html";
+            break;
+        case "/script.js":
+            content = await serveStaticFile("www/script.js");
+            contentType = "text/javascript";
+            break;
+        case "/style.css":
+            content = await serveStaticFile("www/style.css");
+            contentType = "text/css";
+            break;
+        case "/tasks/get":
+            content = await serveStaticFile("tasks.json");
+            contentType = "application/json";
+            break;
+        case "/favicon.ico":
+            content = await serveStaticFile("www/todo_icon.png");
+            contentType = "image/png";
+            break;
+        case "/anote.ttf":
+            content = await serveStaticFile("www/anote.ttf");
+            contentType = "font/ttf";
+            break;
+        default:
+          console.log(process.cwd() + url);
+          content = "Ruta no valida\r\n";
+          contentType = "text/html";
     }
-
     sendResponse(response, content, contentType);
   } else if (request.method === "POST") {
     let body = '';
