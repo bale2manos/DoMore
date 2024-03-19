@@ -72,90 +72,22 @@ const handleRequest = async (request, response) => {
         return;
       }
       console.log(requestData);
-      const { taskId, title, taskDone } = requestData;
-      const taskName = title;
       switch (url) {
-        case "/tasks/add":
-          // Read current tasks from file
-          console.log(taskName);
-          let tasksData_add = await serveStaticFile("tasks.json");
-          console.log(tasksData_add);
-          const tasks_add = JSON.parse(tasksData_add);
-
-          // Find the next available task ID
-          const nextId = tasks_add.length > 0 ? tasks_add[tasks_add.length - 1].id + 1 : 1;
-          // Add the new task to the tasks array
-          tasks_add.push({ id: nextId, title: taskName, done: false });
-          console.log('bien hasta aqui')
-          // Write updated tasks back to file
-          fs.writeFile('tasks.json', JSON.stringify(tasks_add), (err) => {
-            if (err) {
-              console.error('Error writing tasks to file:', err);
-              response.writeHead(500, { 'Content-Type': 'text/plain' });
-              response.end('Internal server error');
-            } else {
-              console.log(`Task added successfully`);
-              response.writeHead(200, { 'Content-Type': 'application/json' });
-              response.end(JSON.stringify({ success: true }));
-            }
-          });
-          
-          console.log('bien hasta el final')
-          break;
-        case "/tasks/remove":
-          // Read current tasks from file
-          const tasksData = await serveStaticFile("tasks.json");
-          const tasks = JSON.parse(tasksData);
-
-          // Find index of task to remove
-          const index = tasks.findIndex(task => task.id === taskId);
-          if (index !== -1) {
-            // Remove task from array
-            tasks.splice(index, 1);
-
-            // Write updated tasks back to file
-            fs.writeFile('tasks.json', JSON.stringify(tasks), (err) => {
+          case "/tasks/update":
+            console.log('All tasks are: ', requestData);
+            // Write requestData to file
+            fs.writeFile('tasks.json', JSON.stringify(requestData), (err) => {
               if (err) {
                 console.error('Error writing tasks to file:', err);
                 response.writeHead(500, { 'Content-Type': 'text/plain' });
                 response.end('Internal server error');
               } else {
-                console.log(`Task with ID ${taskId} removed successfully`);
+                console.log('Tasks written to file successfully');
                 response.writeHead(200, { 'Content-Type': 'text/plain' });
-                response.end('Task removed successfully');
+                response.end(JSON.stringify({ success: true }));
               }
             });
-          }
-          else {
-            console.error(`Task with ID ${taskId} not found`);
-            response.writeHead(404, { 'Content-Type': 'text/plain' });
-            response.end('Task not found');
-          }
-          break;
-      case "/tasks/toggleDone":
-        let body = '';
-        request.on('data', chunk => {
-          body += chunk.toString();
-        });
-        console.log("This is the body: ", body);
-        request.on('end', async () => {
-          console.log("Entro");
-          try {
-            const tasksList = JSON.parse(body).tasks;
-            console.log("This is the taskList: ", tasksList);
-
-            await fs.promises.writeFile('tasks.json', JSON.stringify(tasksList));
-      
-            console.log(`Tasks added successfully`);
-            response.writeHead(200, { 'Content-Type': 'application/json' });
-            response.end(JSON.stringify({ success: true }));
-          } catch (err) {
-            console.error('Error writing tasks to file:', err);
-            response.writeHead(500, { 'Content-Type': 'text/plain' });
-            response.end('Internal server error');
-          }
-        });
-        break;
+            break;          
         default:
           console.log('Invalid URL:', url);
           console.error('Invalid URL:', url);

@@ -64,54 +64,18 @@ const add = async () => {
   if (taskName !== '') {
     console.log(`Adding task: ${taskName}`);
 
-    try {
-      // Enviar una solicitud POST al servidor para agregar la nueva tarea
-      const response = await fetch("/tasks/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({title: taskName }) // Enviar la acción y el título de la tarea en formato JSON
-      });
+    let response = await send_tasks_to_server();
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Analizar los datos JSON de la respuesta
-      const responseData = await response.json();
-
-      // Verificar si la tarea se agregó correctamente
-      if (responseData.success) {
-        console.log("Tarea agregada!");
-        // Si se agrega correctamente, actualizar la lista de tareas localmente
-        const nextId = taskList.length > 0 ? taskList[taskList.length - 1].id + 1 : 1;
-        const newTask = { id: nextId, title: taskName, done: false };
-        taskList.push(newTask);
-
-        // Crear un nuevo elemento de tarea y agregarlo al contenedor de tareas
-        const taskElement = document.createElement('div');
-        taskElement.classList.add('task-item');
-        taskElement.innerHTML = taskName;
-        taskElement.dataset.taskId = nextId;
-        tasksContainer.appendChild(taskElement);
-
-        // Limpiar el campo de entrada
-        taskNameInput.value = '';
-
-        console.log("Tarea agregada!");
-        console.log(taskList);
-
-        // Establecer estilos para el botón cuando se agrega una tarea con texto
-        setButtonStyleForTask();
-      } else {
-        // Si no se agrega correctamente, mostrar un mensaje de error
-        console.error("Error adding task:", responseData.message);
-      }
-    } catch (error) {
-      console.error("Error:", error);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-  } else {
+
+    // Analizar los datos JSON de la respuesta
+    const responseData = await response.json();
+
+    // Verificar si la tarea se agregó correctamente
+    createTaskHTML(responseData);
+  } else { // Tarea vacía
     // Mostrar un mensaje de error si el campo de entrada está vacío
     setButtonStyleForEmptyTask();
 
@@ -123,7 +87,35 @@ const add = async () => {
       resetButonStyle();
     }); 
 
-    // Establecer estilos para el botón cuando se agrega una tarea vacía
+  }
+
+  function createTaskHTML(responseData) {
+    if (responseData.success) {
+      console.log("Tarea agregada!");
+      // Si se agrega correctamente, actualizar la lista de tareas localmente
+      const nextId = taskList.length > 0 ? taskList[taskList.length - 1].id + 1 : 1;
+      const newTask = { id: nextId, title: taskName, done: false };
+      taskList.push(newTask);
+
+      // Crear un nuevo elemento de tarea y agregarlo al contenedor de tareas
+      const taskElement = document.createElement('div');
+      taskElement.classList.add('task-item');
+      taskElement.innerHTML = taskName;
+      taskElement.dataset.taskId = nextId;
+      tasksContainer.appendChild(taskElement);
+
+      // Limpiar el campo de entrada
+      taskNameInput.value = '';
+
+      console.log("Tarea agregada!");
+      console.log(taskList);
+
+      // Establecer estilos para el botón cuando se agrega una tarea con texto
+      setButtonStyleForTask();
+    } else {
+      // Si no se agrega correctamente, mostrar un mensaje de error
+      console.error("Error adding task:", responseData.message);
+    }
   }
 };
 
@@ -144,38 +136,14 @@ const remove = (taskId) => {
   
   // Apply a transition effect to smoothly remove the task item
   taskElement.classList.add('remove-transition');
+  taskList.splice(taskList.findIndex(task => task.id === taskId), 1);
 
   // Wait for the transition to complete before removing the task item from the DOM
   taskElement.addEventListener('transitionend', async () => {
     // Remove the task from the DOM
     taskElement.remove();
 
-    try {
-      // Send a POST request to the server to remove the task using /tasks/remove endpoint
-      const response = await fetch('/tasks/remove', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({taskId: taskId }) // Include action and taskId
-      });
-
-      if (response.ok) {
-        console.log(`Task with ID ${taskId} removed successfully from the server.`);
-        // Update the taskList if the removal was successful
-        const index = taskList.findIndex(task => task.id === taskId);
-        if (index !== -1) {
-          taskList.splice(index, 1);
-          console.log(`Task with ID ${taskId} removed from taskList.`);
-        } else {
-          console.log(`Task with ID ${taskId} not found in taskList.`);
-        }
-      } else {
-        console.error(`Failed to remove task with ID ${taskId} from the server.`);
-      }
-    } catch (error) {
-      console.error('Error removing task:', error);
-    }
+    await send_tasks_to_server();
   }, { once: true }); // Ensure the event listener is only triggered once
 }
 
@@ -279,32 +247,9 @@ const toggleDone = async (taskId) => {
  
           
           console.log(taskList);
-          const tareas = taskList.map(task => {
-            return {
-              id: task.id,
-              title: task.title,
-              done: task.done
-            };
-          });
-          console.log(tareas);
-          console.log(JSON.stringify(tareas));
+          console.log(JSON.stringify(taskList));
           // Send a request to the server to update the task's 'done' status
-          try {
-              const response = await fetch("/tasks/toggleDone", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify(tareas) // Send the task list in JSON format
-            });
-            
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            console.log(`Estado de la tarea con ID ${taskId} cambiado a ${task.done}`);
-          } catch (error) {
-            console.error('Error toggling task status:', error);
-          }
+          await send_tasks_to_server(taskId, task);
         }
       }
     });
@@ -335,4 +280,25 @@ tasksContainer.addEventListener('touchstart', (event) => {
   }
 });
 
+
+async function send_tasks_to_server() {
+  let response;
+  try {
+    response = await fetch("/tasks/update", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(taskList) // Send the task list in JSON format
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    console.log(`Tareas enviadas al servidor: ${taskList}`);
+  } catch (error) {
+    console.error('Error toggling task status:', error);
+  }
+  return response;
+}
 
