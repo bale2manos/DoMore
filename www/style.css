@@ -1,13 +1,13 @@
 @font-face {
-  font-family: 'SuperBloom';
-  src: url('www/anote.ttf') format('truetype');
+  font-family: "SuperBloom";
+  src: url("www/anote.ttf") format("truetype");
 }
 
 body {
-  font-family: 'SuperBloom', 'Roboto', sans-serif;
+  font-family: "SuperBloom", "Roboto", sans-serif;
 }
 
-#main-page-title{
+#main-page-title {
   text-align: center;
   margin-top: 2vh;
   margin-bottom: 2vh;
@@ -18,13 +18,12 @@ body {
   left: 15px;
   right: 15px;
   bottom: 15px;
-  display: flex;  
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  
 }
 
-#task-container{
+#task-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -43,7 +42,6 @@ body {
   line-height: 50px;
   background-color: #f9844a;
 }
-
 
 #fab-add {
   user-select: none;
@@ -64,8 +62,6 @@ body {
   transform: scale(1.1); /* Aumentar el tamaño al pasar el cursor */
 }
 
-
-
 #task-name {
   flex-grow: 1;
   height: 50px;
@@ -81,8 +77,6 @@ body {
 #task-name:focus {
   border-color: #90be6d; /* Cambiar el color del borde al enfocar el input */
 }
-
-
 
 .task-item {
   position: relative;
@@ -105,7 +99,7 @@ body {
   transition: opacity 0.3s ease-out, transform 0.3s ease-out; /* Smooth transition */
 }
 
-.remove-transition-uncompleted{
+.remove-transition-uncompleted {
   opacity: 0; /* Fade out the task item */
   transform: translateX(30%); /* Slide the task item to the left */
   transition: opacity 0.8s ease-out, transform 0.3s ease-out; /* Smooth transition */
@@ -136,4 +130,3 @@ body {
 .simplebar-scrollbar .simplebar-scrollbar-thumb {
   background: #90be6d; /* Color del pulgar de la barra de desplazamiento */
 }
-
