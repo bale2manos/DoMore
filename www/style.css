@@ -52,14 +52,14 @@ body {
   background-color: #7367f0;
   color: white;
   border: none;
-  font-size: 1.5em; /* Aumentar el tamaño del icono */
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Agregar sombra */
-  transition: background-color 0.3s ease, transform 0.3s ease; /* Agregar transición */
+  font-size: 1.5em; 
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); 
+  transition: background-color 0.3s ease, transform 0.3s ease; 
 }
 
 #fab-add:hover {
-  background-color: #90be6d; /* Cambiar color de fondo al pasar el cursor */
-  transform: scale(1.1); /* Aumentar el tamaño al pasar el cursor */
+  background-color: #90be6d; 
+  transform: scale(1.1); 
 }
 
 #task-name {
@@ -67,15 +67,15 @@ body {
   height: 50px;
   padding: 10px;
   border: 2px solid #7367f0;
-  border-radius: 25px; /* Agregar esquinas redondas */
+  border-radius: 25px; 
   font-size: 1em;
-  outline: none; /* Eliminar el contorno al enfocar el input */
-  transition: border-color 0.3s ease; /* Transición suave para el color del borde */
+  outline: none; 
+  transition: border-color 0.3s ease; 
   margin-right: 2vw;
 }
 
 #task-name:focus {
-  border-color: #90be6d; /* Cambiar el color del borde al enfocar el input */
+  border-color: #90be6d; 
 }
 
 .task-item {
@@ -94,23 +94,23 @@ body {
 }
 
 .remove-transition {
-  opacity: 0; /* Fade out the task item */
-  transform: translateX(100%); /* Slide the task item to the left */
-  transition: opacity 0.3s ease-out, transform 0.3s ease-out; /* Smooth transition */
+  opacity: 0; 
+  transform: translateX(100%); 
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out; 
 }
 
 .remove-transition-uncompleted {
-  opacity: 0; /* Fade out the task item */
-  transform: translateX(30%); /* Slide the task item to the left */
-  transition: opacity 0.8s ease-out, transform 0.3s ease-out; /* Smooth transition */
+  opacity: 0; 
+  transform: translateX(30%); 
+  transition: opacity 0.8s ease-out, transform 0.3s ease-out; 
 }
 /* style.css */
 
 .task-container-wrapper {
-  max-height: calc(100vh - 200px); /* Altura máxima del contenedor de tareas */
-  overflow-y: auto; /* Activar desplazamiento vertical cuando se excede la altura máxima */
-  margin: 0 auto; /* Centrar el contenedor horizontalmente */
-  width: 80%; /* Ancho del contenedor */
+  max-height: calc(100vh - 200px); 
+  overflow-y: auto; 
+  margin: 0 auto; 
+  width: 80%; 
 }
 
 .task-container {
@@ -119,21 +119,20 @@ body {
   align-items: center;
   justify-content: center;
   margin: 10px;
-  width: 100%; /* Ancho completo del contenedor */
-  box-sizing: border-box; /* Incluir padding y border en el ancho */
+  width: 100%; 
+  box-sizing: border-box; 
 }
 
 /* Personalizar la barra de desplazamiento */
 .simplebar-scrollbar:before {
-  background: #7367f0; /* Color de fondo de la barra de desplazamiento */
+  background: #7367f0; 
 }
 .simplebar-scrollbar .simplebar-scrollbar-thumb {
-  background: #90be6d; /* Color del pulgar de la barra de desplazamiento */
+  background: #90be6d; 
 }
 
 
 
-/* Dark mode toggle button */
 .dark-mode-button {
   position: fixed;
   top: 20px;
@@ -141,11 +140,11 @@ body {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background-color: #fff; /* Light mode background color */
-  border: 2px solid #ffe169; /* Add a border with color #ffe169 */
+  background-color: #fff; 
+  border: 2px solid #ffe169; 
   cursor: pointer;
-  z-index: 9999; /* Ensure it's above other content */
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Add a shadow effect */
+  z-index: 9999; 
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); 
 }
 
 .dark-mode-button img {
@@ -155,6 +154,6 @@ body {
 
 /* Dark mode styles */
 .dark-mode {
-  background-color: #333; /* Dark mode background color */
-  color: #fff; /* Dark mode text color */
+  background-color: #333; 
+  color: #fff; 
 }
