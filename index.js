@@ -3,6 +3,7 @@ const fs = require("fs");
 
 const PORT = 3000;
 
+
 const serveStaticFile = async (file) => {
   return new Promise((resolve, reject) => {
     fs.readFile(file, function (err, data) {
@@ -42,7 +43,7 @@ const handleRequest = async (request, response) => {
         contentType = "application/json";
         break;
       case "/tasks/darkMode":
-        content = await serveStaticFile("darkMode.json");
+        content = await serveStaticFile("user_info.json");
         contentType = "application/json";
         break;
       case "/favicon.ico":
@@ -93,10 +94,10 @@ const handleRequest = async (request, response) => {
             }
           });
           break;
-        case "tasks/darkMode":
+        case "/tasks/darkMode":
           console.log("Dark mode is: ", requestData);
           // Write requestData to file
-          fs.writeFile("darkMode.json", JSON.stringify(requestData), (err) => {
+          fs.writeFile("user_info.json", JSON.stringify(requestData), (err) => {
             if (err) {
               console.error("Error writing darkMode to file:", err);
               response.writeHead(500, { "Content-Type": "text/plain" });
@@ -109,8 +110,8 @@ const handleRequest = async (request, response) => {
           });
           break;
         default:
-          console.log("Invalid URL:", url);
-          console.error("Invalid URL:", url);
+          console.log("Invalid URL in POST:", url);
+          console.error("Invalid URL in POST:", url);
           response.writeHead(404, { "Content-Type": "text/plain" });
           response.end("Not found");
       }

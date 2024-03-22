@@ -3,6 +3,7 @@ const tasksContainer = document.getElementById("task-container");
 
 // Inicializar SimpleBar en el contenedor de tareas
 const taskContainerWrapper = document.querySelector(".task-container-wrapper");
+const darkModeButton = document.getElementById("dark-mode-toggle");
 new SimpleBar(taskContainerWrapper, { autoHide: false });
 
 const enableDarkMode = () => {
@@ -22,6 +23,7 @@ const fetchDarkModeStatus = async () => {
   try {
       const response = await fetch('/tasks/darkMode');
       if (response.ok) {
+          console.log('Dark mode status fetched successfully'); 
           const data = await response.json();
           return data.darkMode;
       } else {
@@ -60,11 +62,9 @@ const toggleDarkMode = async () => {
   // Apply dark mode status to the UI
   if (newDarkModeStatus) {
       enableDarkMode();
-      darkModeButton.style.backgroundColor = "#f9844a"; // Set background color using style property
 
   } else {
       disableDarkMode();
-      darkModeButton.style.backgroundColor = "#90be6d"; // Set background color using style property
 
   }
 };
