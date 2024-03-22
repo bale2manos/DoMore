@@ -137,6 +137,11 @@ const add = async () => {
 
   if (taskName !== "") {
     console.log(`Adding task: ${taskName}`);
+    const nextId =
+        taskList.length > 0 ? taskList[taskList.length - 1].id + 1 : 1;
+    const newTask = { id: nextId, title: taskName, done: false };
+    taskList.push(newTask);
+    createTaskHTML(nextId, taskName);
     let response = await send_tasks_to_server();
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -145,7 +150,14 @@ const add = async () => {
     const responseData = await response.json();
 
     // Verificar si la tarea se agregó correctamente
-    createTaskHTML(responseData);
+    Swal.fire({
+      toast: true,
+      position: 'top-end', // Display toast at the top-right corner
+      icon: 'success',
+      showConfirmButton: false,
+      timer: 2000, // Toast disappears after 2 seconds
+      text: `Tarea: ${taskName} añadida`
+    });
   } else {
     // Tarea vacía
     // Mostrar un mensaje de error si el campo de entrada está vacío
@@ -160,20 +172,16 @@ const add = async () => {
     });
   }
 
-  function createTaskHTML(responseData) {
-    if (responseData.success) {
-      console.log("Tarea agregada!");
+  function createTaskHTML(taskId, taskName) {
+    
       // Si se agrega correctamente, actualizar la lista de tareas localmente
-      const nextId =
-        taskList.length > 0 ? taskList[taskList.length - 1].id + 1 : 1;
-      const newTask = { id: nextId, title: taskName, done: false };
-      taskList.push(newTask);
+      
 
       // Crear un nuevo elemento de tarea y agregarlo al contenedor de tareas
       const taskElement = document.createElement("div");
       taskElement.classList.add("task-item");
       taskElement.innerHTML = taskName;
-      taskElement.dataset.taskId = nextId;
+      taskElement.dataset.taskId = taskId;
       tasksContainer.appendChild(taskElement);
 
       // Limpiar el campo de entrada
@@ -184,13 +192,8 @@ const add = async () => {
 
       // Establecer estilos para el botón cuando se agrega una tarea con texto
       setButtonStyleForTask();
-    } else {
-      // Si no se agrega correctamente, mostrar un mensaje de error
-      console.error("Error adding task:", responseData.message);
-    }
-  }
 };
-
+};
 addButton.addEventListener("click", add);
 
 const taskNameInput = document.getElementById("task-name");
@@ -209,6 +212,15 @@ const remove = (taskId) => {
     taskList.findIndex((task) => task.id === taskId),
     1
   );
+  Swal.fire({
+    toast: true,
+    position: 'top-end', // Display toast at the top-right corner
+    icon: 'info', // Adjust icon to 'info' if preferred
+    showConfirmButton: false,
+    timer: 2000, // Toast disappears after 2 seconds
+    text: 'Tarea eliminada'
+  });
+  
 
   // Wait for the transition to complete before removing the task item from the DOM
   taskElement.addEventListener(
