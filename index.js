@@ -41,6 +41,10 @@ const handleRequest = async (request, response) => {
         content = await serveStaticFile("tasks.json");
         contentType = "application/json";
         break;
+      case "/tasks/darkMode":
+        content = await serveStaticFile("darkMode.json");
+        contentType = "application/json";
+        break;
       case "/favicon.ico":
         content = await serveStaticFile("www/todo_icon.png");
         contentType = "image/png";
@@ -49,6 +53,7 @@ const handleRequest = async (request, response) => {
         content = await serveStaticFile("www/anote.ttf");
         contentType = "font/ttf";
         break;
+      
       default:
         console.log(process.cwd() + url);
         content = "Ruta no valida\r\n";
@@ -83,6 +88,21 @@ const handleRequest = async (request, response) => {
               response.end("Internal server error");
             } else {
               console.log("Tasks written to file successfully");
+              response.writeHead(200, { "Content-Type": "text/plain" });
+              response.end(JSON.stringify({ success: true }));
+            }
+          });
+          break;
+        case "tasks/darkMode":
+          console.log("Dark mode is: ", requestData);
+          // Write requestData to file
+          fs.writeFile("darkMode.json", JSON.stringify(requestData), (err) => {
+            if (err) {
+              console.error("Error writing darkMode to file:", err);
+              response.writeHead(500, { "Content-Type": "text/plain" });
+              response.end("Internal server error");
+            } else {
+              console.log("Dark mode written to file successfully");
               response.writeHead(200, { "Content-Type": "text/plain" });
               response.end(JSON.stringify({ success: true }));
             }

@@ -5,6 +5,74 @@ const tasksContainer = document.getElementById("task-container");
 const taskContainerWrapper = document.querySelector(".task-container-wrapper");
 new SimpleBar(taskContainerWrapper, { autoHide: false });
 
+const enableDarkMode = () => {
+  document.body.classList.add("dark-mode");
+  darkModeButton.style.backgroundColor = "#595959"; // Set background color using style property
+};
+
+const disableDarkMode = () => {
+  document.body.classList.remove("dark-mode");
+  darkModeButton.style.backgroundColor = "#fff"; // Set background color using style property
+};
+
+
+
+// Function to fetch the status of dark mode from the server
+const fetchDarkModeStatus = async () => {
+  try {
+      const response = await fetch('/tasks/darkMode');
+      if (response.ok) {
+          const data = await response.json();
+          return data.darkMode;
+      } else {
+          console.error('Failed to fetch dark mode status');
+          return false; // Default to false if fetching fails
+      }
+  } catch (error) {
+      console.error('Error fetching dark mode status:', error);
+      return false; // Default to false if an error occurs
+  }
+};
+
+// Function to update the status of dark mode on the server
+const updateDarkModeStatus = async (darkMode) => {
+  try {
+      const response = await fetch('/tasks/darkMode', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ darkMode })
+      });
+      if (!response.ok) {
+          console.error('Failed to update dark mode status');
+      }
+  } catch (error) {
+      console.error('Error updating dark mode status:', error);
+  }
+};
+
+// Toggle dark mode status and update server
+const toggleDarkMode = async () => {
+  let newDarkModeStatus = !document.body.classList.contains("dark-mode");
+  // Update server with new dark mode status
+  await updateDarkModeStatus(newDarkModeStatus);
+  // Apply dark mode status to the UI
+  if (newDarkModeStatus) {
+      enableDarkMode();
+      darkModeButton.style.backgroundColor = "#f9844a"; // Set background color using style property
+
+  } else {
+      disableDarkMode();
+      darkModeButton.style.backgroundColor = "#90be6d"; // Set background color using style property
+
+  }
+};
+
+// Event listener for dark mode toggle button
+const darkModeToggle = document.getElementById("dark-mode-toggle");
+darkModeToggle.addEventListener("click", toggleDarkMode); 
+
 const loadTasks = async () => {
   const response = await fetch("/tasks/get");
   const tasks = await response.json();
@@ -24,8 +92,23 @@ const loadTasks = async () => {
   });
 };
 
-loadTasks();
 console.log(taskList);
+
+// Fetch the status of dark mode when the app starts
+const initializeApp = async () => {
+  loadTasks();
+  const darkModeStatus = await fetchDarkModeStatus();
+  console.log(darkModeStatus);
+  console.log(`Dark mode status: ${darkModeStatus}`);
+  // Apply dark mode status to the UI
+  if (darkModeStatus) {
+      enableDarkMode();
+  } else {
+      disableDarkMode();
+  }
+};
+
+initializeApp();
 const addButton = document.querySelector("#fab-add");
 
 const resetButonStyle = () => {
@@ -206,19 +289,14 @@ tasksContainer.addEventListener("touchstart", (event) => {
 let timeStart = 0;
 
 const toggleDone = async (taskId) => {
-  const task = taskList.find((task) => task.id === taskId);
-  if (task) {
+  const taskIndex = taskList.findIndex((task) => task.id === taskId);
+  if (taskIndex !== -1) {
+    const task = taskList[taskIndex];
     const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
-
-    // Set a flag to determine whether the animation should proceed
-    let shouldAnimate = true;
 
     // Determine the target color based on the task's current state
     const targetColor = task.done ? "#f9844a" : "#90be6d";
     const originalColor = task.done ? "#90be6d" : "#f9844a";
-
-    // Record the start time when the user touches the task
-    const startTime = new Date().getTime();
 
     // Animate the background color change
     gsap.to(taskElement, {
@@ -226,27 +304,50 @@ const toggleDone = async (taskId) => {
       backgroundColor: targetColor,
       ease: "power2.inOut",
       onComplete: async () => {
-        // Calculate the duration of the hold
-        const holdDuration = new Date().getTime() - startTime;
+        task.done = !task.done;
 
-        // If the hold duration is longer than 2 seconds and the animation should proceed
-        if (shouldAnimate && holdDuration >= 2000) {
-          // Update the task's state after 2 seconds if the animation should proceed
-          task.done = !task.done;
+        if (task.done) {
+          // Reorder tasks based on their done state
+          const doneTasks = taskList.filter((t) => t.done);
+          const undoneTasks = taskList.filter((t) => !t.done);
 
-          console.log(taskList);
-          console.log(JSON.stringify(taskList));
-          // Send a request to the server to update the task's 'done' status
-          await send_tasks_to_server(taskId, task);
+          // Remove task from its current position
+          taskList.splice(taskIndex, 1);
+
+          // Determine the index to insert the task
+          let insertIndex;
+          if (doneTasks.length > 0) {
+            insertIndex = Math.max(
+              undoneTasks.length,
+              undoneTasks.findIndex((t) => t.id > doneTasks[doneTasks.length - 1].id)
+            );
+          } else {
+            insertIndex = undoneTasks.length;
+          }
+
+          // Insert the task at the appropriate position
+          taskList.splice(insertIndex, 0, task);
+
+          // Update the DOM with the new task order
+          tasksContainer.removeChild(taskElement);
+          tasksContainer.insertBefore(taskElement, tasksContainer.children[insertIndex]);
+        } else {
+          // Move the task to the top if it transitions from complete to in progress
+          taskList.splice(taskIndex, 1);
+          taskList.unshift(task);
+          tasksContainer.removeChild(taskElement);
+          tasksContainer.insertBefore(taskElement, tasksContainer.firstChild);
         }
+
+        // Send a request to the server to update the task's 'done' status
+        await send_tasks_to_server(taskId, task);
       },
-    });
+    }); 
 
     // Event listener to cancel the animation if the user releases the finger before 2 seconds
     taskElement.addEventListener("touchend", () => {
-      shouldAnimate = false;
       gsap.killTweensOf(taskElement);
-      const elapsedTime = new Date().getTime() - startTime;
+      const elapsedTime = new Date().getTime() - timeStart;
       if (elapsedTime < 2000) {
         gsap.to(taskElement, {
           duration: 0.1, // Adjust duration as needed
@@ -258,14 +359,17 @@ const toggleDone = async (taskId) => {
   }
 };
 
-// Event listeners for touch events
+
+// Event listener for touchstart on task items to handle toggleDone
 tasksContainer.addEventListener("touchstart", (event) => {
+  event.preventDefault();
   timeStart = new Date().getTime(); // Record the start time when the user touches the screen
   const taskId = parseInt(event.target.dataset.taskId);
   if (!isNaN(taskId)) {
     toggleDone(taskId); // Start the animation on touch start
   }
 });
+
 
 async function send_tasks_to_server() {
   let response;
@@ -287,3 +391,8 @@ async function send_tasks_to_server() {
   }
   return response;
 }
+
+
+
+// Event listener for dark mode toggle button
+darkModeToggle.addEventListener("click", toggleDarkMode);
